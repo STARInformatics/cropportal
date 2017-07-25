@@ -3,6 +3,7 @@ package bio.knowledge.web.ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.navigator.Navigator;
@@ -13,10 +14,12 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.NativeButton;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 
 import bio.knowledge.engine.RequestEngine;
 import bio.knowledge.engine.SearchEngine;
@@ -27,15 +30,12 @@ import bio.knowledge.models.Trait;
 @SpringUI
 @Theme("kb2")
 public class ApplicationUI extends UI {
-	
-	RequestEngine requestEngine;
 
 	@SuppressWarnings("unused")
 	private Navigator applicationNavigator;
 	
     @Override
-    protected void init(VaadinRequest vaadinRequest) {
-    	
+    protected void init(VaadinRequest vaadinRequest) {    	
         VerticalLayout verticalLayout = new VerticalLayout();
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         
@@ -60,8 +60,22 @@ public class ApplicationUI extends UI {
         	System.out.println(traits);
         	
         	for (Trait trait : traits) {
-        		Label label = new Label(trait.name.english);
-        		searchResultLayout.addComponent(label);
+        		try {
+	        		NativeButton label = new NativeButton(trait.name.english);
+	        		label.addClickListener(e -> {
+	        			Map<String, String> details = SearchEngine.findTraitDetails(trait.id);
+	        			Window window = new Window(trait.name.english);
+	        			VerticalLayout vlayout = new VerticalLayout();
+	        			window.setContent(vlayout);
+	        			for (String key : details.keySet()) {
+	        				vlayout.addComponent(new Label(key + " : " + details.get(key)));
+	        			}
+	        			ApplicationUI.getCurrent().addWindow(window);
+	        		});
+	        		searchResultLayout.addComponent(label);
+        		} catch (Exception e) {
+        			
+        		}
         	}
         });
         
